@@ -1,0 +1,115 @@
+@model ContactBook.Web.Models.ViewModels.ImportResultViewModel
+
+@{
+    ViewData["Title"] = "导入结果";
+}
+
+<h2>📊 @ViewData["Title"]</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-12">
+        @* 统计信息 *@
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center border-success">
+                    <div class="card-body">
+                        <h1 class="text-success">@Model.SuccessCount</h1>
+                        <p class="card-text">✓ 成功导入</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-danger">
+                    <div class="card-body">
+                        <h1 class="text-danger">@Model.ErrorCount</h1>
+                        <p class="card-text">✗ 导入失败</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-primary">
+                    <div class="card-body">
+                        <h1 class="text-primary">@Model.TotalCount</h1>
+                        <p class="card-text">📋 总计</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        @* 成功消息 *@
+        @if (Model.SuccessCount > 0)
+        {
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">✓ 导入成功！</h4>
+                <p>成功导入 <strong>@Model.SuccessCount</strong> 条联系人记录。</p>
+            </div>
+        }
+        
+        @* 错误列表 *@
+        @if (Model.Errors != null && Model.Errors.Any())
+        {
+            <div class="card border-danger mb-3">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">❌ 导入错误详情 (@Model.ErrorCount 条)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <strong>提示：</strong>以下记录导入失败，请检查数据格式后重新导入。
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%;">行号</th>
+                                    <th style="width: 30%;">联系人</th>
+                                    <th style="width: 60%;">错误信息</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var error in Model.Errors)
+                                {
+                                    <tr>
+                                        <td><span class="badge bg-danger">@error.RowNumber</span></td>
+                                        <td>@error.ContactName</td>
+                                        <td class="text-danger">@error.ErrorMessage</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @* 操作按钮 *@
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a asp-controller="Contact" asp-action="Index" class="btn btn-primary">
+                📋 查看联系人列表
+            </a>
+            <a asp-action="Import" class="btn btn-secondary">
+                📥 继续导入
+            </a>
+            @if (Model.ErrorCount > 0)
+            {
+                <a asp-action="DownloadTemplate" class="btn btn-success">
+                    📄 下载模板重新整理数据
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 自动滚动到错误列表
+        $(document).ready(function() {
+            if (@Model.ErrorCount > 0) {
+                $('html, body').animate({
+                    scrollTop: $('.card.border-danger').offset().top - 100
+                }, 500);
+            }
+        });
+    </script>
+}

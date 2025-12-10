@@ -1,0 +1,190 @@
+@model IEnumerable<ContactBook.Web.Models.Contact>
+
+@{
+    ViewData["Title"] = "联系人列表";
+    var searchTerm = ViewBag.SearchTerm as string;
+    var showFavoritesOnly = ViewBag.ShowFavoritesOnly as bool?;
+}
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+</div>
+
+@* 搜索和筛选栏 *@
+<div class="row mb-3">
+    <div class="col-md-8">
+        <form asp-action="Index" method="get" class="row g-2">
+            <div class="col-auto flex-grow-1">
+                <input type="text" name="searchTerm" value="@searchTerm" class="form-control" placeholder="搜索姓名、公司或职位..." />
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">🔍 搜索</button>
+            </div>
+            <div class="col-auto">
+                <a asp-action="Index" class="btn btn-secondary">清除</a>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group" role="group">
+            <a asp-action="Index" class="btn @(showFavoritesOnly != true ? "btn-primary" : "btn-outline-primary")">
+                📋 全部
+            </a>
+            <a asp-action="Index" asp-route-showFavoritesOnly="true" class="btn @(showFavoritesOnly == true ? "btn-warning" : "btn-outline-warning")">
+                ⭐ 收藏
+            </a>
+        </div>
+    </div>
+</div>
+
+@* 联系人列表 *@
+@if (Model != null && Model.Any())
+{
+    <div class="row">
+        @foreach (var contact in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 contact-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">
+                                @contact.Name
+                                @if (contact.IsFavorite)
+                                {
+                                    <span class="badge bg-warning text-dark">⭐</span>
+                                }
+                            </h5>
+                            <button class="btn btn-sm btn-link p-0 favorite-btn" 
+                                    data-contact-id="@contact.Id" 
+                                    data-is-favorite="@contact.IsFavorite.ToString().ToLower()"
+                                    title="@(contact.IsFavorite ? "取消收藏" : "添加收藏")">
+                                <span class="favorite-icon">@(contact.IsFavorite ? "⭐" : "☆")</span>
+                            </button>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(contact.Company))
+                        {
+                            <p class="card-text text-muted mb-1">
+                                <small>🏢 @contact.Company</small>
+                            </p>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(contact.Position))
+                        {
+                            <p class="card-text text-muted mb-2">
+                                <small>💼 @contact.Position</small>
+                            </p>
+                        }
+                        
+                        @if (contact.ContactMethods != null && contact.ContactMethods.Any())
+                        {
+                            <div class="contact-methods mb-2">
+                                @foreach (var method in contact.ContactMethods.Take(3))
+                                {
+                                    <small class="d-block text-truncate">
+                                        @switch (method.Type)
+                                        {
+                                            case ContactBook.Web.Models.ContactMethodType.Phone:
+                                                <span>📱</span>
+                                                break;
+                                            case ContactBook.Web.Models.ContactMethodType.Email:
+                                                <span>📧</span>
+                                                break;
+                                            case ContactBook.Web.Models.ContactMethodType.WeChat:
+                                                <span>💬</span>
+                                                break;
+                                            case ContactBook.Web.Models.ContactMethodType.QQ:
+                                                <span>🐧</span>
+                                                break;
+                                            case ContactBook.Web.Models.ContactMethodType.Address:
+                                                <span>📍</span>
+                                                break;
+                                            default:
+                                                <span>📞</span>
+                                                break;
+                                        }
+                                        @method.Label: @method.Value
+                                    </small>
+                                }
+                                @if (contact.ContactMethods.Count > 3)
+                                {
+                                    <small class="text-muted">还有 @(contact.ContactMethods.Count - 3) 个联系方式...</small>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group btn-group-sm w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@contact.Id" class="btn btn-outline-info">详情</a>
+                            <a asp-action="Edit" asp-route-id="@contact.Id" class="btn btn-outline-primary">编辑</a>
+                            <a asp-action="Delete" asp-route-id="@contact.Id" class="btn btn-outline-danger">删除</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">暂无联系人</h4>
+        <p>您还没有添加任何联系人。</p>
+        <hr>
+        <p class="mb-0">
+            <a asp-action="Create" class="btn btn-primary">➕ 创建第一个联系人</a>
+            或
+            <a asp-controller="ImportExport" asp-action="Import" class="btn btn-secondary">📥 从Excel导入</a>
+        </p>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // 收藏按钮点击事件
+        $(document).ready(function() {
+            $('.favorite-btn').click(function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var contactId = btn.data('contact-id');
+                var isFavorite = btn.data('is-favorite');
+                
+                $.ajax({
+                    url: '@Url.Action("ToggleFavorite", "Contact")',
+                    type: 'POST',
+                    data: { 
+                        id: contactId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // 更新图标
+                            var icon = btn.find('.favorite-icon');
+                            if (response.isFavorite) {
+                                icon.text('⭐');
+                                btn.attr('title', '取消收藏');
+                                btn.data('is-favorite', true);
+                            } else {
+                                icon.text('☆');
+                                btn.attr('title', '添加收藏');
+                                btn.data('is-favorite', false);
+                            }
+                            
+                            // 如果在收藏页面，刷新页面
+                            if (@((showFavoritesOnly == true).ToString().ToLower())) {
+                                location.reload();
+                            }
+                        } else {
+                            alert('操作失败：' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('操作失败，请稍后重试。');
+                    }
+                });
+            });
+        });
+    </script>
+}

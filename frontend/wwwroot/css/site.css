@@ -1,0 +1,161 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+/* 联系人卡片样式 */
+.contact-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* 收藏按钮样式 */
+.favorite-btn {
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.2);
+}
+
+.favorite-icon {
+    display: inline-block;
+}
+
+/* 联系方式列表样式 */
+.contact-methods {
+    font-size: 0.9rem;
+}
+
+/* 页脚固定在底部 */
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    line-height: 60px;
+}
+
+/* 卡片标题样式 */
+.card-title {
+    color: #333;
+    font-weight: 600;
+}
+
+/* 徽章样式优化 */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* 表单验证错误样式 */
+.text-danger {
+    font-size: 0.875rem;
+}
+
+/* 联系方式项样式 */
+.contact-method-item {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+.contact-method-item:hover {
+    background-color: #e9ecef;
+}
+
+/* 按钮组样式 */
+.btn-group-sm .btn {
+    font-size: 0.875rem;
+}
+
+/* 导航栏样式 */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+/* 下拉菜单样式 */
+.dropdown-menu {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 警告框样式 */
+.alert {
+    border-radius: 0.5rem;
+}
+
+/* 列表组样式 */
+.list-group-item {
+    border-left: 3px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.list-group-item:hover {
+    border-left-color: #0d6efd;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .contact-card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+    }
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: #0d6efd;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 表格样式优化 */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.02);
+}
+
+/* 搜索框样式 */
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+
+/* 卡片阴影 */
+.card {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}

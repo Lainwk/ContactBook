@@ -1,0 +1,138 @@
+@model ContactBook.Web.Models.Contact
+
+@{
+    ViewData["Title"] = "删除联系人";
+}
+
+<h2 class="text-danger">⚠️ @ViewData["Title"]</h2>
+<hr />
+
+<div class="alert alert-danger" role="alert">
+    <h4 class="alert-heading">确认删除</h4>
+    <p>您确定要删除此联系人吗？此操作无法撤销！</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">即将删除的联系人信息</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">姓名</dt>
+                    <dd class="col-sm-9">
+                        <strong>@Model.Name</strong>
+                        @if (Model.IsFavorite)
+                        {
+                            <span class="badge bg-warning text-dark">⭐ 收藏</span>
+                        }
+                    </dd>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Company))
+                    {
+                        <dt class="col-sm-3">公司</dt>
+                        <dd class="col-sm-9">🏢 @Model.Company</dd>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.Position))
+                    {
+                        <dt class="col-sm-3">职位</dt>
+                        <dd class="col-sm-9">💼 @Model.Position</dd>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <dt class="col-sm-3">备注</dt>
+                        <dd class="col-sm-9">@Model.Notes</dd>
+                    }
+                    
+                    <dt class="col-sm-3">创建时间</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                </dl>
+                
+                @if (Model.ContactMethods != null && Model.ContactMethods.Any())
+                {
+                    <hr />
+                    <h6>📱 联系方式 (@Model.ContactMethods.Count 个)</h6>
+                    <ul class="list-group">
+                        @foreach (var method in Model.ContactMethods)
+                        {
+                            <li class="list-group-item">
+                                <strong>
+                                    @switch (method.Type)
+                                    {
+                                        case ContactBook.Web.Models.ContactMethodType.Phone:
+                                            <span>📱 手机</span>
+                                            break;
+                                        case ContactBook.Web.Models.ContactMethodType.Telephone:
+                                            <span>☎️ 电话</span>
+                                            break;
+                                        case ContactBook.Web.Models.ContactMethodType.Email:
+                                            <span>📧 邮箱</span>
+                                            break;
+                                        case ContactBook.Web.Models.ContactMethodType.WeChat:
+                                            <span>💬 微信</span>
+                                            break;
+                                        case ContactBook.Web.Models.ContactMethodType.QQ:
+                                            <span>🐧 QQ</span>
+                                            break;
+                                        case ContactBook.Web.Models.ContactMethodType.Address:
+                                            <span>📍 地址</span>
+                                            break;
+                                        default:
+                                            <span>📞 其他</span>
+                                            break;
+                                    }
+                                </strong>
+                                @if (!string.IsNullOrEmpty(method.Label))
+                                {
+                                    <span class="badge bg-info">@method.Label</span>
+                                }
+                                <br />
+                                @method.Value
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">⚠️ 警告</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger">
+                    <strong>删除后将无法恢复！</strong>
+                </p>
+                <p>删除此联系人将同时删除：</p>
+                <ul>
+                    <li>所有基本信息</li>
+                    <li>所有联系方式 (@(Model.ContactMethods?.Count ?? 0) 个)</li>
+                    <li>收藏状态</li>
+                    <li>所有相关记录</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="form-group">
+        <button type="submit" class="btn btn-danger">
+            🗑️ 确认删除
+        </button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+            查看详情
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            ← 取消并返回列表
+        </a>
+    </div>
+</form>

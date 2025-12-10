@@ -1,0 +1,194 @@
+@model ContactBook.Web.Models.ViewModels.ContactViewModel
+
+@{
+    ViewData["Title"] = "编辑联系人";
+}
+
+<h2>@ViewData["Title"]</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            @* 基本信息 *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Name" class="control-label">姓名 <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="请输入姓名" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Company" class="control-label">公司</label>
+                        <input asp-for="Company" class="form-control" placeholder="请输入公司名称" />
+                        <span asp-validation-for="Company" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Position" class="control-label">职位</label>
+                        <input asp-for="Position" class="form-control" placeholder="请输入职位" />
+                        <span asp-validation-for="Position" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Notes" class="control-label">备注</label>
+                        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="请输入备注信息"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input asp-for="IsFavorite" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsFavorite" class="form-check-label">
+                            ⭐ 添加到收藏
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            @* 联系方式 *@
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">联系方式</h5>
+                    <button type="button" class="btn btn-sm btn-success" id="addContactMethod">
+                        ➕ 添加联系方式
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="contactMethodsContainer">
+                        @for (int i = 0; i < Model.ContactMethods.Count; i++)
+                        {
+                            <div class="contact-method-item mb-3 p-3 border rounded" data-index="@i">
+                                <input type="hidden" asp-for="ContactMethods[i].Id" />
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="control-label">类型</label>
+                                        <select asp-for="ContactMethods[i].Type" class="form-select">
+                                            <option value="0">手机</option>
+                                            <option value="1">电话</option>
+                                            <option value="2">邮箱</option>
+                                            <option value="3">微信</option>
+                                            <option value="4">QQ</option>
+                                            <option value="5">地址</option>
+                                            <option value="6">其他</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="control-label">标签</label>
+                                        <input asp-for="ContactMethods[i].Label" class="form-control" placeholder="如：工作、个人" />
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="control-label">值</label>
+                                        <input asp-for="ContactMethods[i].Value" class="form-control" placeholder="请输入联系方式" />
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        <button type="button" class="btn btn-danger btn-sm remove-contact-method" data-index="@i">
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            @* 操作按钮 *@
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">💾 保存修改</button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">查看详情</a>
+                <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">💡 提示</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">📝 姓名为必填项</li>
+                    <li class="mb-2">📱 可以添加或删除联系方式</li>
+                    <li class="mb-2">⭐ 可以随时修改收藏状态</li>
+                    <li class="mb-2">💾 记得保存修改</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">⚠️ 危险操作</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">如果您想删除此联系人：</p>
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger btn-sm">
+                    🗑️ 删除联系人
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        var contactMethodIndex = @Model.ContactMethods.Count;
+        
+        // 添加联系方式
+        $('#addContactMethod').click(function() {
+            var template = `
+                <div class="contact-method-item mb-3 p-3 border rounded" data-index="${contactMethodIndex}">
+                    <input type="hidden" name="ContactMethods[${contactMethodIndex}].Id" value="0" />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="control-label">类型</label>
+                            <select name="ContactMethods[${contactMethodIndex}].Type" class="form-select">
+                                <option value="0">手机</option>
+                                <option value="1">电话</option>
+                                <option value="2">邮箱</option>
+                                <option value="3">微信</option>
+                                <option value="4">QQ</option>
+                                <option value="5">地址</option>
+                                <option value="6">其他</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="control-label">标签</label>
+                            <input name="ContactMethods[${contactMethodIndex}].Label" class="form-control" placeholder="如：工作、个人" />
+                        </div>
+                        <div class="col-md-5">
+                            <label class="control-label">值</label>
+                            <input name="ContactMethods[${contactMethodIndex}].Value" class="form-control" placeholder="请输入联系方式" />
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-contact-method">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#contactMethodsContainer').append(template);
+            contactMethodIndex++;
+        });
+        
+        // 删除联系方式
+        $(document).on('click', '.remove-contact-method', function() {
+            if ($('.contact-method-item').length > 1) {
+                $(this).closest('.contact-method-item').remove();
+            } else {
+                alert('至少需要保留一个联系方式！');
+            }
+        });
+    </script>
+}

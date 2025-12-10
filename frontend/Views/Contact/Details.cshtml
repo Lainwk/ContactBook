@@ -1,0 +1,235 @@
+@model ContactBook.Web.Models.Contact
+
+@{
+    ViewData["Title"] = "联系人详情";
+}
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <h2>
+            @Model.Name
+            @if (Model.IsFavorite)
+            {
+                <span class="badge bg-warning text-dark">⭐ 收藏</span>
+            }
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        @* 基本信息卡片 *@
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">📋 基本信息</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">姓名</dt>
+                    <dd class="col-sm-9">@Model.Name</dd>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Company))
+                    {
+                        <dt class="col-sm-3">公司</dt>
+                        <dd class="col-sm-9">🏢 @Model.Company</dd>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.Position))
+                    {
+                        <dt class="col-sm-3">职位</dt>
+                        <dd class="col-sm-9">💼 @Model.Position</dd>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <dt class="col-sm-3">备注</dt>
+                        <dd class="col-sm-9">@Model.Notes</dd>
+                    }
+                    
+                    <dt class="col-sm-3">收藏状态</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.IsFavorite)
+                        {
+                            <span class="badge bg-warning text-dark">⭐ 已收藏</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">未收藏</span>
+                        }
+                    </dd>
+                    
+                    <dt class="col-sm-3">创建时间</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                    
+                    <dt class="col-sm-3">更新时间</dt>
+                    <dd class="col-sm-9">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                </dl>
+            </div>
+        </div>
+        
+        @* 联系方式卡片 *@
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">📱 联系方式</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.ContactMethods != null && Model.ContactMethods.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var method in Model.ContactMethods)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            @switch (method.Type)
+                                            {
+                                                case ContactBook.Web.Models.ContactMethodType.Phone:
+                                                    <span>📱 手机</span>
+                                                    break;
+                                                case ContactBook.Web.Models.ContactMethodType.Telephone:
+                                                    <span>☎️ 电话</span>
+                                                    break;
+                                                case ContactBook.Web.Models.ContactMethodType.Email:
+                                                    <span>📧 邮箱</span>
+                                                    break;
+                                                case ContactBook.Web.Models.ContactMethodType.WeChat:
+                                                    <span>💬 微信</span>
+                                                    break;
+                                                case ContactBook.Web.Models.ContactMethodType.QQ:
+                                                    <span>🐧 QQ</span>
+                                                    break;
+                                                case ContactBook.Web.Models.ContactMethodType.Address:
+                                                    <span>📍 地址</span>
+                                                    break;
+                                                default:
+                                                    <span>📞 其他</span>
+                                                    break;
+                                            }
+                                            @if (!string.IsNullOrEmpty(method.Label))
+                                            {
+                                                <span class="badge bg-info">@method.Label</span>
+                                            }
+                                        </h6>
+                                        <p class="mb-0">
+                                            @if (method.Type == ContactBook.Web.Models.ContactMethodType.Email)
+                                            {
+                                                <a href="mailto:@method.Value">@method.Value</a>
+                                            }
+                                            else if (method.Type == ContactBook.Web.Models.ContactMethodType.Phone || 
+                                                     method.Type == ContactBook.Web.Models.ContactMethodType.Telephone)
+                                            {
+                                                <a href="tel:@method.Value">@method.Value</a>
+                                            }
+                                            else
+                                            {
+                                                @method.Value
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">暂无联系方式</p>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        @* 操作按钮卡片 *@
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">⚙️ 操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        ✏️ 编辑联系人
+                    </a>
+                    <button type="button" class="btn btn-warning favorite-btn" 
+                            data-contact-id="@Model.Id" 
+                            data-is-favorite="@Model.IsFavorite.ToString().ToLower()">
+                        <span class="favorite-text">
+                            @if (Model.IsFavorite)
+                            {
+                                <text>☆ 取消收藏</text>
+                            }
+                            else
+                            {
+                                <text>⭐ 添加收藏</text>
+                            }
+                        </span>
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        ← 返回列表
+                    </a>
+                    <hr />
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                        🗑️ 删除联系人
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        @* 统计信息卡片 *@
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📊 统计信息</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <strong>联系方式数量：</strong>
+                        <span class="badge bg-primary">@(Model.ContactMethods?.Count ?? 0)</span>
+                    </li>
+                    <li class="mb-2">
+                        <strong>创建时间：</strong><br />
+                        <small class="text-muted">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                    </li>
+                    <li>
+                        <strong>最后更新：</strong><br />
+                        <small class="text-muted">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 收藏按钮点击事件
+        $(document).ready(function() {
+            $('.favorite-btn').click(function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var contactId = btn.data('contact-id');
+                
+                $.ajax({
+                    url: '@Url.Action("ToggleFavorite", "Contact")',
+                    type: 'POST',
+                    data: { 
+                        id: contactId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // 刷新页面以显示更新后的状态
+                            location.reload();
+                        } else {
+                            alert('操作失败：' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('操作失败，请稍后重试。');
+                    }
+                });
+            });
+        });
+    </script>
+}
